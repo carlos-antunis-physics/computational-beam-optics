@@ -4,6 +4,8 @@
 
 > Author: Carlos Antunis Bonfim da Silva Santos
 
+This repository is based on: [FiniteDiferenceBPM](https://github.com/Windier/FiniteDifferenceBPM) of [José Carlos](https://github.com/Windier)
+
 ## ABOUT THIS REPO
 
 Understand how an optical medium (even more the non-linear ones) affects the light beam propagation are of enormous importance, also being an important source of novel applications. However, provide an analytical method cappable to comprehend this (which embbed possible non-linear effects) is quite difficult (or sometimes impossible). 
