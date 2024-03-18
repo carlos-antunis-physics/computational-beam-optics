@@ -20,7 +20,7 @@ def Gaussian(
     );
 
 # hermite-gauss beam constructor
-from scipy.special import eval_hermite as hermite
+from scipy.special import hermite
 def HermiteGauss(
     index: tuple[int, int],
     w0: float,
@@ -32,7 +32,7 @@ def HermiteGauss(
 ) -> np.ndarray:
     l, m = index;
     _sqrt2 = np.sqrt(2);
-    _G = lambda i,S: hermite(i,S) * np.exp(- S**2 / 2.0);
+    _G = lambda i,S: hermite(i,monic = True)(S) * np.exp(- S**2 / 2.0);
     return createField(
         F = lambda X, Y: _G(l, _sqrt2 * X / w0) * _G(m, _sqrt2 * Y / w0),
         region = region,
@@ -43,7 +43,7 @@ def HermiteGauss(
     );
 
 # laguerre-gauss beam constructor
-from scipy.special import assoc_laguerre as laguerre
+from scipy.special import genlaguerre as laguerre
 def LaguerreGauss(
     index: tuple[int, int],
     w0: float,
@@ -55,8 +55,8 @@ def LaguerreGauss(
 ) -> np.ndarray:
     l, m = index;
     return createField(
-        F = lambda X, Y: (np.sqrt(X**2 + Y **2) / w0) ** l * laguerre(
-            2 * (X**2 + Y**2) / w0 ** 2, l, m
+        F = lambda X, Y: (np.sqrt(X**2 + Y **2) / w0) ** l * laguerre(l, m, monic = True)(
+            2 * (X**2 + Y**2) / w0**2.0
         ) * np.exp(-(X**2 + Y**2)/w0**2),
         region = region,
         center = center,
