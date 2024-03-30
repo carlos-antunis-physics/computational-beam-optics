@@ -32,4 +32,4 @@ mv computational-beam-optics-main/optical/ ./optical/
 rm -r computational-beam-optics-main/
 ```
 
-the optical directory contains everything in the library - now just put in your project and use.
+the `optical/` directory contains everything in the library - now just put in your project and use.
