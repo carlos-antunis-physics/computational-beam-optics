@@ -2,14 +2,14 @@ import numpy as np
 from scipy.fftpack import fft2,ifft2,fftshift
 
 def splitstepPropagate(
-    U: np.ndarray,
+    U: np.ndarray | dict[Any, np.ndarray],
     wavelength: float | list[float],
     region: tuple[np.ndarray, np.ndarray],
     Z: np.ndarray,
     medium: dict
-) -> np.ndarray:
+) -> np.ndarray | dict[Any, np.ndarray]:
     # compute general parameters of propagation method
-    k0 = 2.0 * np.pi / wavelength;
+    k0 = 2.0 * np.pi / np.asarray(wavelength);
     k = k0 * medium['base refractive index'];
 
     # compute direct space parameters of propagation procedure
@@ -38,4 +38,6 @@ def splitstepPropagate(
     for z in Z:
         # evaluate free space propagation effects in k-space
         U = ifft2(H * fft2(U));
+        # evaluate nonlinear propagation effects in direct space
+        U = exp(idz * medium['non-linearity'](U)) * U;
     return U;
