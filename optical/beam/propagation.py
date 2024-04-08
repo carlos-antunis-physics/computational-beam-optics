@@ -2,12 +2,12 @@ import numpy as np
 from scipy.fftpack import fft2,ifft2,fftshift
 
 def splitstepPropagate(
-    U: np.ndarray | dict[Any, np.ndarray],
+    U: np.ndarray | dict[any, np.ndarray],
     wavelength: float | list[float],
     region: tuple[np.ndarray, np.ndarray],
     Z: np.ndarray,
     medium: dict
-) -> np.ndarray | dict[Any, np.ndarray]:
+) -> np.ndarray | dict[any, np.ndarray]:
     # compute general parameters of propagation method
     k0 = 2.0 * np.pi / np.asarray(wavelength);
     k = k0 * medium['base refractive index'];
