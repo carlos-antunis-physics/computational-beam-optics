@@ -1,7 +1,7 @@
 import numpy as np
 
 def create(
-    n0: float
+    n0: float,
     nonLinearity: np.ufunc = lambda U: 0.0
 ) -> dict:
     '''
