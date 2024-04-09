@@ -20,15 +20,15 @@ def splitstepPropagate(
 
     # compute k space parameters of propagation procedure
     kx, ky = (
-        [np.pi / (Nx * dx) * (2.0 * (m - 0.5) - (Nx - 1)) for m in range(Nx)],
-        [np.pi / (Ny * dy) * (2.0 * (m - 0.5) - (Ny - 1)) for m in range(Ny)]
+        [np.pi / (Nx * dx) * (2.0 * (m - 1.0) - (Nx - 1)) for m in range(Nx)],
+        [np.pi / (Ny * dy) * (2.0 * (m - 1.0) - (Ny - 1)) for m in range(Ny)]
     )
     Kx, Ky = np.meshgrid(kx,ky);
 
     # compute parameters of propagation procedure
     idz = 1.0j * dz;
     H = fftshift(                   # free space transfer function
-        np.exp(-idz / (2.0 * k) * (Kx ** 2 + Ky ** 2))
+        np.exp(idz / (2.0 * k) * (Kx ** 2 + Ky ** 2))
     );
 
     U[:, -1:0] = 0.0;
