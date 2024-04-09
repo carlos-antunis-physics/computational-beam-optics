@@ -39,5 +39,5 @@ def splitstepPropagate(
         # evaluate free space propagation effects in k-space
         U = ifft2(H * fft2(U));
         # evaluate nonlinear propagation effects in direct space
-        U = np.exp(idz * medium['non-linearity'](U)) * U;
+        U = np.exp(-idz * medium['non-linearity'](U)) * U;
     return U;
