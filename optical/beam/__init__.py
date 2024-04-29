@@ -1,222 +1,168 @@
 import numpy as np
+from dataclasses import dataclass
+from enum import Enum
 
-incidence = lambda k, beamAng: dict(
-        x = k * np.tan(beamAng[0] * np.pi / 180.0),
-        y = k * np.tan(beamAng[1] * np.pi / 180.0)
+@dataclass
+class coordinate_system (Enum):
+    cartesian: bool = True;
+    polar: bool = False;
+
+cart2pol = lambda coord: (
+        np.sqrt(coord[0] ** 2 + coord[1] ** 2),
+        np.arctan2(coord[1], coord[0])
+    );
+pol2cart = lambda coord: (
+        coord[0] * np.cos(coord[1]),
+        coord[0] * np.sin(coord[1])
+    );
+
+@dataclass
+class __incidence_t__:
+    x: float;
+    y: float;
+    def __init__(self, x: float, y: float) -> None:
+        self.x = x;
+        self.y = y;
+
+incidence = lambda k, beam_angulation: __incidence_t__(
+        x = k * np.tan(beam_angulation[0] * np.pi / 180.0),
+        y = k * np.tan(beam_angulation[1] * np.pi / 180.0)
     );
 
 def create(
-    region: tuple[np.ndarray, np.ndarray],
     F: np.ufunc,
-    phase: float | np.ndarray[float] = 0.0,
-    incidence: dict = incidence(k = 0.0, beamAng = (0.0, 0.0)),
-    center: tuple[float, float] = (0.0, 0.0),
-    normalize: bool = True
+    region: tuple[np.ndarray, np.ndarray],
+    beam_phase: float | np.ndarray = 0.0,
+    incidence = incidence(k = 0.0, beam_angulation = (0.0, 0.0)),
+    beam_center: tuple[float, float] = (0.0, 0.0),
+    coordinate_system = coordinate_system.cartesian
 ) -> np.ndarray:
     '''
-    ## (function) `optical.beam.create`:
-        process which evaluate a light beam (`F`) whithin a finite stratum of space (`region`) .
+    ## `optical.beam.create`:
+        evaluate a light beam envelope `F` within a finite stratum `region`
+        of the transverse plane.
 
     ### syntax:
-            `U = optical.beam.create(F = envelope, region = (X, Y))`
-        
+        `U = optical.beam.create(F = lambda x,y: envelope(x,y), region = (X, Y))`
+
     ### parameters:
-            `F`: `np.ufunc`
-                optical beam envelope universal function dependence in X, Y coordinates.
-            `region`: `tuple[np.ndarray, np.ndarray]`
-                tuple of X, Y meshgrid where beam will be evaluated.
-            [optional] `phase`: `float` : `np.ndarray`
-                beam phase value or matrix along the computational region.
-            [optional] `incidence`: `dict`
-                beam incidente vector dictionary constructed by `optical.beam.incidence`.
-            [optional] `center`: `tuple[float, float]`
-                tuple of x, y coordinate values to translate beam origin.
-            [optional] `normalize`: `bool`
-                condition to beam intensity normalization.
+        `region`: `tuple[numpy.ndarray, numpy.ndarray]`
+            meshgrids 2-tuple of transverse plane stratum.
+        `F`: `numpy.ufunc`
+            optical beam envelope.
+        [optional] `phase`: `float` or `np.ndarray`
+            beam phase along the `region`.
+        [optional] `incidence` = `optical.beam.incidence(k, beam_angulation)`
+            beam incidence with `k` as wavenumber and `beam_angulation` as angulation.
+        [optional] `beam_center` : `tuple[float, float]`
+            x, y cartesian coordinates 2-tuple of beam center.
+        [optional] `coordinate_system`
+            `coordinate_system.polar` if `F` is described in polar coordinates.
     '''
-    # compute spatial coordinate parameters
-    X, Y = region;                  # x, y axis meshgrid where beam will be evaluated
-    xC, yC = center;                # x, y coordinates to translate beam origin
-    # optical beam evaluation
-    U = F(                          # evaluate beam wave envelope in translated meshgrid
-        X - xC,
-        Y - yC
-    ).astype(np.complex128);
-    if normalize:
-        U = U / np.abs(U).max().max();
-    U *= np.exp(1.0j * phase);      # evaluate phase of the beam
-    U *= np.exp(                    # evaluate incidence phasor of the beam
-        -1.0j * (incidence['x'] * X + incidence['y'] * Y)
+    # compute spatial coordinates
+    X, Y = region;                  # x, y axis meshgrids of transverse plane region
+    x0, y0 = beam_center;           # x, y coordinates of beam center
+    Xc, Yc = X - x0, Y - y0;        # x, y axis meshgrids recentered
+    if not coordinate_system.value:
+        Rho, phi = cart2pol(
+            coord = (Xc, Yc)
+        );
+        # evaluate beam
+        U = F(Rho, phi);
+    else:
+        # evaluate beam
+        U = F(Xc, Yc);
+    U = U.astype(np.complex128);
+    U *= np.exp(                    # insert beam phase
+        +1.0j * beam_phase
+    );
+    U *= np.exp(                    # evaluate beam phase due tho incidence
+        -1.0j * (
+            incidence.x * X + incidence.y * Y
+        )
     );
     return U;
 
-def createG(
-    region: tuple[np.ndarray, np.ndarray],
-    w0: float,
-    phase: float | np.ndarray[float] = 0.0,
-    incidence: dict = incidence(k = 0.0, beamAng = (0.0, 0.0)),
-    center: tuple[float, float] = (0.0, 0.0),
-    normalize: bool = True
-) -> np.ndarray:
-    '''
-    ## (function) `optical.beam.createG`:
-        process which evaluate a gaussian beam whithin a finite stratum of space (`region`) .
+normalize = lambda U: U / np.abs(U).max().max();
 
-    ### syntax:
-            `U = optical.beam.createG(w0 = w0, region = (X, Y))`
-        
-    ### parameters:
-            `w0`: `float`
-                value of gaussian beam waist.
-            `region`: `tuple[np.ndarray, np.ndarray]`
-                tuple of X, Y meshgrid where beam will be evaluated.
-            [optional] `phase`: `float` : `np.ndarray`
-                beam phase value or matrix along the computational region.
-            [optional] `incidence`: `dict`
-                beam incidente vector dictionary constructed by `optical.beam.incidence`.
-            [optional] `center`: `tuple[float, float]`
-                tuple of x, y coordinate values to translate beam origin.
-            [optional] `normalize`: `bool`
-                condition to beam intensity normalization.
-    '''
+def create_G(
+    w0: float,
+    region: tuple[np.ndarray, np.ndarray],
+    A: float = 1.0,
+    beam_phase: float | np.ndarray = 0.0,
+    incidence = incidence(k = 0.0, beam_angulation = (0.0, 0.0)),
+    beam_center: tuple[float, float] = (0.0, 0.0),
+) -> np.ndarray:
     return create(
-        F = lambda X, Y: np.exp(-(X**2 + Y**2)/w0**2),
+        F = lambda r, phi: A * np.exp(-(r / w0) ** 2),
         region = region,
-        phase = phase,
+        beam_phase = beam_phase,
         incidence = incidence,
-        center = center,
-        normalize = normalize
+        beam_center = beam_center,
+        coordinate_system = coordinate_system.polar
     );
 
 from scipy.special import hermite as H
-def createHG(
-    region: tuple[np.ndarray, np.ndarray],
+def create_HG(
     w0: float,
     indices: tuple[int, int],
-    phase: float | np.ndarray[float] = 0.0,
-    incidence: dict = incidence(k = 0.0, beamAng = (0.0, 0.0)),
-    center: tuple[float, float] = (0.0, 0.0),
-    normalize: bool = True
+    region: tuple[np.ndarray, np.ndarray],
+    A: float = 1.0,
+    beam_phase: float | np.ndarray = 0.0,
+    incidence = incidence(k = 0.0, beam_angulation = (0.0, 0.0)),
+    beam_center: tuple[float, float] = (0.0, 0.0),
 ) -> np.ndarray:
-    '''
-    ## (function) `optical.beam.createHG`:
-        process which evaluate a hermite-gauss beam whithin a finite stratum of space (`region`) .
-
-    ### syntax:
-            `U = optical.beam.createHG(w0 = w0, indices = (l,m) , region = (X, Y))`
-        
-    ### parameters:
-            `w0`: `float`
-                value of hermite-gauss beam waist.
-            `indices`: `tuple[int, int]`
-                tuple of x and y hermite polynomial orders.
-            `region`: `tuple[np.ndarray, np.ndarray]`
-                tuple of X, Y meshgrid where beam will be evaluated.
-            [optional] `phase`: `float` : `np.ndarray`
-                beam phase value or matrix along the computational region.
-            [optional] `incidence`: `dict`
-                beam incidente vector dictionary constructed by `optical.beam.incidence`.
-            [optional] `center`: `tuple[float, float]`
-                tuple of x, y coordinate values to translate beam origin.
-            [optional] `normalize`: `bool`
-                condition to beam intensity normalization.
-    '''
-    l, m = indices;                 # HG indices
-    _sq2_ov_w0 = np.sqrt(2) / w0;
-    _G = lambda i, s: H(i, monic = True)(s) * np.exp(- s**2 / 2.0);
+    l, m = indices;
+    _sq2_ov_w0_ = np.sqrt(2.0) / w0;
+    G_l = lambda x: H(l, monic = True)(x) * np.exp(- x ** 2 / 2.0);
+    G_m = lambda x: H(m, monic = True)(x) * np.exp(- x ** 2 / 2.0);
+    _g = lambda i, s: H(i, monic = True)(s) * np.exp(- s ** 2 / 2.0);
     return create(
-        F = lambda X, Y: _G(l, _sq2_ov_w0 * X) * _G(m, _sq2_ov_w0 *Y),
+        F = lambda x, y: A * G_l(_sq2_ov_w0_ * x) * G_m(_sq2_ov_w0_ * y),
         region = region,
-        phase = phase,
+        beam_phase = beam_phase,
         incidence = incidence,
-        center = center,
-        normalize = normalize
+        beam_center = beam_center,
+        coordinate_system = coordinate_system.cartesian
     );
 
 from scipy.special import genlaguerre as L
-def createLG(
-    region: tuple[np.ndarray, np.ndarray],
+def create_LG(
     w0: float,
-    indices: tuple[int, int],
-    phase: float | np.ndarray[float] = 0.0,
-    incidence: dict = incidence(k = 0.0, beamAng = (0.0, 0.0)),
-    center: tuple[float, float] = (0.0, 0.0),
-    normalize: bool = True
+    radial_index: int,
+    azimuthal_index: int,
+    region: tuple[np.ndarray, np.ndarray],
+    A: float = 1.0,
+    beam_phase: float | np.ndarray = 0.0,
+    incidence = incidence(k = 0.0, beam_angulation = (0.0, 0.0)),
+    beam_center: tuple[float, float] = (0.0, 0.0),
 ) -> np.ndarray:
-    '''
-    ## (function) `optical.beam.createLG`:
-        process which evaluate a laguerre-gauss beam whithin a finite stratum of space (`region`) .
-
-    ### syntax:
-            `U = optical.beam.createLG(w0 = w0, indices = (l,m) , region = (X, Y))`
-        
-    ### parameters:
-            `w0`: `float`
-                value of laguerre-gauss beam waist.
-            `indices`: `tuple[int, int]`
-                tuple of azimuthal and radial index of laguerre-gauss beam.
-            `region`: `tuple[np.ndarray, np.ndarray]`
-                tuple of X, Y meshgrid where beam will be evaluated.
-            [optional] `phase`: `float` : `np.ndarray`
-                beam phase value or matrix along the computational region.
-            [optional] `incidence`: `dict`
-                beam incidente vector dictionary constructed by `optical.beam.incidence`.
-            [optional] `center`: `tuple[float, float]`
-                tuple of x, y coordinate values to translate beam origin.
-            [optional] `normalize`: `bool`
-                condition to beam intensity normalization.
-    '''
-    l, m = indices;                 # LG indices
+    l, m = radial_index, azimuthal_index;
+    L_lm = lambda r: L(m, l, monic = True)(2 * (r / w0) ** 2);
     return create(
-        F = lambda X, Y: (np.sqrt(X**2 + Y **2) / w0) ** l * L(l, m, monic = True)(
-            2 * (X**2 + Y**2) / w0**2.0
-        ) * np.exp(-(X**2 + Y**2)/w0**2),
+        F = lambda r, phi: A * (r / w0) ** l * L_lm(r) * np.exp(-(r / w0) ** 2) * np.exp(1.0j * l * phi),
         region = region,
-        phase = phase,
+        beam_phase = beam_phase,
         incidence = incidence,
-        center = center,
-        normalize = normalize
+        beam_center = beam_center,
+        coordinate_system = coordinate_system.polar
     );
 
 from scipy.special import jv as J
-def createJ(
-    region: tuple[np.ndarray, np.ndarray],
+def create_J(
     k_t: float,
     m: int,
-    phase: float | np.ndarray[float] = 0.0,
-    incidence: dict = incidence(k = 0.0, beamAng = (0.0, 0.0)),
-    center: tuple[float, float] = (0.0, 0.0),
-    normalize: bool = True
+    region: tuple[np.ndarray, np.ndarray],
+    A: float = 1.0,
+    beam_phase: float | np.ndarray = 0.0,
+    incidence = incidence(k = 0.0, beam_angulation = (0.0, 0.0)),
+    beam_center: tuple[float, float] = (0.0, 0.0),
 ) -> np.ndarray:
-    '''
-    ## (function) `optical.beam.createJ`:
-        process which evaluate a bessel beam whithin a finite stratum of space (`region`) .
-
-    ### syntax:
-            `U = optical.beam.createJ(k_t = k_t, m = m , region = (X, Y))`
-        
-    ### parameters:
-            `k_t`: `float`
-                value k_t parameter of bessel beam.
-            `m`: `int`
-                order of bessel function.
-            `region`: `tuple[np.ndarray, np.ndarray]`
-                tuple of X, Y meshgrid where beam will be evaluated.
-            [optional] `phase`: `float` : `np.ndarray`
-                beam phase value or matrix along the computational region.
-            [optional] `incidence`: `dict`
-                beam incidente vector dictionary constructed by `optical.beam.incidence`.
-            [optional] `center`: `tuple[float, float]`
-                tuple of x, y coordinate values to translate beam origin.
-            [optional] `normalize`: `bool`
-                condition to beam intensity normalization.
-    '''
-    _J = lambda rho, phi: J(m, k_t * rho) * np.exp(-1.0j * m * phi);
     return create(
-        F = lambda X, Y: _J(np.sqrt(X**2 + Y**2), np.arctan2(X, Y)),
+        F = lambda r, phi: A * J(m, k_t * r) * np.exp(-1.0j * m * phi),
         region = region,
-        phase = phase,
+        beam_phase = beam_phase,
         incidence = incidence,
-        center = center,
-        normalize = normalize
+        beam_center = beam_center,
+        coordinate_system = coordinate_system.polar
     );
