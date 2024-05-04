@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.fftpack import fft2, ifft2, fftshift
-from ..medium import __medium__
-from ..medium.waveguides import waveguide
+import sys
+sys.path.append('..')
+from medium import __medium__
+from medium.waveguides import waveguide
 
 def splitstep(
     U: np.ndarray,
