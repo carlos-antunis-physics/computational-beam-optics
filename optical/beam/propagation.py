@@ -39,7 +39,7 @@ def splitstep(
         # evaluate nonlinear effects in direct space
         U = np.exp(idz * medium.nonlinearity(U)) * U;
         # evaluate waveguides effects in direct space
-        Delta_n = np.zeros(X.shape)
+        Delta_n = np.zeros(U.shape)
         for WG in medium.waveguides:
             Delta_n += WG.apply_refractive_index((X,Y), z);
         U = np.exp(idz * Delta_n) * U;
