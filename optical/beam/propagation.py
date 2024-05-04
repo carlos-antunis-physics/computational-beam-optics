@@ -21,8 +21,8 @@ def splitstep(
 
     # compute k-space parameters of propagation
     kx, ky = (
-        [np.pi / (float(Nx - 1) * dx) * float(2 * m - (Nx - 1)) for m in range(Nx)],
-        [np.pi / (float(Ny - 1) * dy) * float(2 * m - (Ny - 1)) for m in range(Ny)],
+        [np.pi / (Nx * dx) * float(2 * (m + 0.5) - (Nx - 1)) for m in range(Nx)],
+        [np.pi / (Ny * dy) * float(2 * (m + 0.5) - (Ny - 1)) for m in range(Ny)],
     );
     Kx, Ky = np.meshgrid(kx, ky);
 
