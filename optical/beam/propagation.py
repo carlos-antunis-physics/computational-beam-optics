@@ -29,7 +29,7 @@ def splitstep(
     # compute general parameters of propagation
     k0 = 2.0 * np.pi / wavelength;
     idz_ov_2k = idz / (2.0 * k0 * medium.n0);
-    H = fftshift(np.exp(-idz_ov_2k * (Kx ** 2 + Ky ** 2)));
+    H = fftshift(np.exp(+idz_ov_2k * (Kx ** 2 + Ky ** 2)));
 
     # estimate optical field propagation
     for z in Z:
@@ -37,10 +37,10 @@ def splitstep(
         # evaluate free space propagation efects in k-space
         U = ifft2(H * fft2(U));
         # evaluate nonlinear effects in direct space
-        U = np.exp(idz * medium.nonlinearity(U)) * U;
+        U = np.exp(-idz * medium.nonlinearity(U)) * U;
         # evaluate waveguides effects in direct space
         Delta_n = np.zeros(U.shape)
         for WG in medium.waveguides:
             Delta_n += WG.apply_refractive_index((X,Y), z);
-        U = np.exp(idz * Delta_n) * U;
+        U = np.exp(-idz * Delta_n) * U;
     return U;
