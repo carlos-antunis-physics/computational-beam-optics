@@ -26,8 +26,8 @@ def split_step(
     _idz = -idz;
 
     # compute k-coordinates
-    kx = [np.pi / (Nx * dx) * float(2 * (m - 1) - (Nx - 1)) for m in range(Nx)];
-    ky = [np.pi / (Ny * dy) * float(2 * (m - 1) - (Ny - 1)) for m in range(Ny)];
+    kx = [np.pi / (Nx * dx) * float(2 * (m - 0.5) - (Nx - 1)) for m in range(Nx)];
+    ky = [np.pi / (Ny * dy) * float(2 * (m - 0.5) - (Ny - 1)) for m in range(Ny)];
     Kx, Ky = np.meshgrid(kx, ky);
 
     # compute general parameters of propagation
