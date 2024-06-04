@@ -167,7 +167,7 @@ def rectangular(
 ) -> np.ufunc:
     '''
         ## `optical.medium.rectangular`
-            constructs a rectangular cuboid geometry with size `Lx` by `Ly`.
+            constructs a rectangular cuboid geometry with refered `lengths`.
     
         ### syntax
             `optical.medium.rectangular(lengths = (Lx, Ly))`
@@ -228,7 +228,7 @@ def circular(
 ) -> np.ufunc:
     '''
         ## `optical.medium.rectangular`
-            constructs a circular cylinder geometry with radius `radius`.
+            constructs a circular cylinder geometry with refered `radius`.
     
         ### syntax
             `optical.medium.circular(radius = R)`
