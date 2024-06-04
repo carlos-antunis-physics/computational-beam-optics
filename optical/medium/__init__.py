@@ -252,7 +252,7 @@ def circular(
         if callable(radius):
             return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius(z));
         else:
-            return lambda x,y,z: ((x - x0(z))**2. + (y - y0))**2. <= radius);
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius);
     elif callable(y0):
         # center moving in y axis along z axis
         if callable(radius):
