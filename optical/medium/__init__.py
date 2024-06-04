@@ -167,11 +167,11 @@ def rectangular(
 ) -> np.ufunc:
     '''
         ## `optical.medium.rectangular`
-            constructs a rectangular cuboid geometry with size `Lx` by `Ly`
+            constructs a rectangular cuboid geometry with size `Lx` by `Ly`.
     
         ### syntax
-            `optical.medium.rectangular_cuboid(lengths = (Lx, Ly))`
-            `optical.medium.rectangular_cuboid(lengths = (Lx(z), Ly(z)))`
+            `optical.medium.rectangular(lengths = (Lx, Ly))`
+            `optical.medium.rectangular(lengths = (Lx(z), Ly(z)))`
         #### optional parameters
             `center`: `tuple[numpy.float128, numpy.float128] | tuple[np.ufunc, np.ufunc]`
                 cartesian coordinates in where rectangles are centered. 
@@ -221,3 +221,47 @@ def rectangular(
             return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0) <= Ly(z) / 2.);
         else:
             return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0) <= (Ly / 2.));
+
+def circular(
+    radius: np.float128 | np.ufunc,
+    center: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc] = (0.0, 0.0)
+) -> np.ufunc:
+    '''
+        ## `optical.medium.rectangular`
+            constructs a circular cylinder geometry with radius `radius`.
+    
+        ### syntax
+            `optical.medium.circular(radius = R)`
+            `optical.medium.circular(radius = R(z))`
+        #### optional parameters
+            `center`: `tuple[numpy.float128, numpy.float128] | tuple[np.ufunc, np.ufunc]`
+                cartesian coordinates in where circles are centered.
+    '''
+    # evaluate geometry parameters
+    x0, y0 = center;
+
+    # evaluate geometry by callability of parameters
+    if callable(x0) and callable(y0):
+        # center moving along z axis
+        if callable(radius):
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius(z));
+        else:
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius);
+    elif callable(x0):
+        # center moving in x axis along z axis
+        if callable(radius):
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius(z));
+        else:
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0))**2. <= radius);
+    elif callable(y0):
+        # center moving in y axis along z axis
+        if callable(radius):
+            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius(z));
+        else:
+            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius);
+    else:
+        # center fixed along z axis
+        if callable(radius):
+            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius(z));
+        else:
+            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius);
