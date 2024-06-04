@@ -227,7 +227,7 @@ def circular(
     center: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc] = (0.0, 0.0)
 ) -> np.ufunc:
     '''
-        ## `optical.medium.rectangular`
+        ## `optical.medium.circular`
             constructs a circular cylinder geometry with refered `radius`.
     
         ### syntax
