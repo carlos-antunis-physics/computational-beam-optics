@@ -11,7 +11,7 @@ class waveguide:
         self,
         geometry: np.ufunc,
         delta_n: np.float128 | np.complex128 | np.ufunc,
-        zi: np.float128 = -np.infty,
+        zi: np.float128 = 0.0,
         zf: np.float128 = +np.infty,
     ) -> None:
         '''
@@ -35,9 +35,9 @@ class waveguide:
                 z coordinate where guide ends. 
         '''
         # impose guide_geometry as condition to be in waveguide
-        if zi == -np.infty and zf == +np.infty:
+        if zi == 0.0 and zf == +np.infty:
             self.is_in = lambda x,y,z: geometry(x,y,z);
-        elif zi != -np.infty:
+        elif zi != 0.0:
             self.is_in = lambda x,y,z: (zi <= z) & geometry(x,y,z);
         elif zf != +np.infty:
             self.is_in = lambda x,y,z: geometry(x,y,z) & (z <= zf);
