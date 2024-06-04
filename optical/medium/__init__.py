@@ -156,3 +156,68 @@ def visualize(
 
     # show waveguides
     plt.show();
+
+'''
+    waveguide geometry constructors.
+'''
+
+def rectangular_cuboid(
+    lengths: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc],
+    center: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc] = (0.0, 0.0)
+) -> np.ufunc:
+    '''
+        ## `optical.medium.rectangular_cuboid`
+            constructs a rectangular cuboid geometry with size `Lx` by `Ly`
+    
+        ### syntax
+            `optical.medium.rectangular_cuboid(lengths = (Lx, Ly))`
+            `optical.medium.rectangular_cuboid(lengths = (Lx(z), Ly(z)))`
+        #### optional parameters
+            `center`: `tuple[numpy.float128, numpy.float128] | tuple[np.ufunc, np.ufunc]`
+                cartesian coordinates in where rectangles are centered. 
+    '''
+    # evaluate geometry parameters
+    x0, y0 = center;
+    Lx, Ly = lengths;
+
+    # evaluate geometry by callability of parameters
+    if callable(x0) and callable(y0):
+        # center moving along z axis
+        if callable(Lx) and callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx(z) / 2.)) & (np.abs(y - y0(z)) <= (Ly(z) / 2.));
+        elif callable(Lx):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx(z) / 2.)) & (np.abs(y - y0(z)) <= (Ly / 2.));
+        elif callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx / 2.)) & (np.abs(y - y0(z)) <= (Ly(z) / 2.));
+        else:
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx / 2.)) & (np.abs(y - y0(z)) <= (Ly / 2.));
+    elif callable(x0):
+        # center moving in x axis along z axis
+        if callable(Lx) and callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx(z) / 2.)) & (np.abs(y - y0) <= (Ly(z) / 2.));
+        elif callable(Lx):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx(z) / 2.)) & (np.abs(y - y0) <= (Ly / 2.));
+        elif callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx / 2.)) & (np.abs(y - y0) <= (Ly(z) / 2.));
+        else:
+            return lambda x,y,z: (np.abs(x - x0(z)) <= (Lx / 2.)) & (np.abs(y - y0) <= (Ly / 2.));
+    elif callable(y0):
+        # center moving in y axis along z axis
+        if callable(Lx) and callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx(z) / 2.)) & (np.abs(y - y0(z)) <= (Ly(z) / 2.));
+        elif callable(Lx):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx(z) / 2.)) & (np.abs(y - y0(z)) <= (Ly / 2.));
+        elif callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0(z)) <= (Ly(z) / 2.));
+        else:
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0(z)) <= (Ly / 2.));
+    else:
+        # center fixed along z axis
+        if callable(Lx) and callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx(z) / 2.)) & (np.abs(y - y0) <= (Ly(z) / 2.));
+        elif callable(Lx):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx(z) / 2.)) & (np.abs(y - y0) <= (Ly / 2.));
+        elif callable(Ly):
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0) <= Ly(z) / 2.);
+        else:
+            return lambda x,y,z: (np.abs(x - x0) <= (Lx / 2.)) & (np.abs(y - y0) <= (Ly / 2.));
