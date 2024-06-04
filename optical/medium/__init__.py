@@ -161,12 +161,12 @@ def visualize(
     waveguide geometry constructors.
 '''
 
-def rectangular_cuboid(
+def rectangular(
     lengths: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc],
     center: tuple[np.float128, np.float128] | tuple[np.ufunc, np.ufunc] = (0.0, 0.0)
 ) -> np.ufunc:
     '''
-        ## `optical.medium.rectangular_cuboid`
+        ## `optical.medium.rectangular`
             constructs a rectangular cuboid geometry with size `Lx` by `Ly`
     
         ### syntax
