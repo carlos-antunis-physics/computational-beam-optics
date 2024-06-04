@@ -119,6 +119,7 @@ def visualize(
         iWG += 1;
 
     #initialize 3d plot
+    fig = plt.figure();
     ax = plt.axes(projection = '3d');
 
     # configure z axis
@@ -153,9 +154,6 @@ def visualize(
 
     # plot voxels
     ax.voxels(WG, facecolors = Colors);
-
-    # show waveguides
-    plt.show();
 
 '''
     waveguide geometry constructors.
@@ -244,24 +242,24 @@ def circular(
     if callable(x0) and callable(y0):
         # center moving along z axis
         if callable(radius):
-            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius(z));
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius(z) ** 2.);
         else:
-            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius);
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0(z))**2. <= radius ** 2.);
     elif callable(x0):
         # center moving in x axis along z axis
         if callable(radius):
-            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius(z));
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius(z) ** 2.);
         else:
-            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius);
+            return lambda x,y,z: ((x - x0(z))**2. + (y - y0)**2. <= radius ** 2.);
     elif callable(y0):
         # center moving in y axis along z axis
         if callable(radius):
-            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius(z));
+            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius(z) ** 2.);
         else:
-            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius);
+            return lambda x,y,z: ((x - x0)**2. + (y - y0(z))**2. <= radius ** 2.);
     else:
         # center fixed along z axis
         if callable(radius):
-            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius(z));
+            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius(z) ** 2.);
         else:
-            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius);
+            return lambda x,y,z: ((x - x0)**2. + (y - y0)**2. <= radius ** 2.);
