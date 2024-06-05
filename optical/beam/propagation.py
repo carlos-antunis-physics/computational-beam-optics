@@ -43,5 +43,5 @@ def split_step(
         S = medium.apply_nonlinearity(U);
         for waveguide in medium.waveguides:
             S += waveguide.apply_refractive_index(X,Y,Z);
-        U = np.exp(_idz * S) * U;
+        U = np.exp(idz * S) * U;
     return U;
