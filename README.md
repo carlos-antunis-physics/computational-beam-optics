@@ -36,7 +36,3 @@ $$
 $$
 
 which are the boundary condition of our Dirichlet BVP.
-
-### LIGHT BEAM EVALUATION ON ENTRY PLANE
-### CONSTRUCTION OF AN OPTICAL MEDIUM
-### ESTIMATION OF LIGHT BEAM PROPAGATION
