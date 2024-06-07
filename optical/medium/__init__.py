@@ -13,6 +13,7 @@ class waveguide:
         delta_n: np.float128 | np.complex128 | np.ufunc,
         zi: np.float128 = 0.0,
         zf: np.float128 = +np.infty,
+        color: str = 'black'
     ) -> None:
         '''
         ## `optical.medium.waveguide`
@@ -33,6 +34,8 @@ class waveguide:
                 z coordinate where guide starts. 
             `zf`: `numpy.float128`
                 z coordinate where guide ends. 
+            `color`: `str`
+                color to represent the waveguide in visualizations.
         '''
         # impose guide_geometry as condition to be in waveguide
         if zi == 0.0 and zf == +np.infty:
@@ -45,6 +48,8 @@ class waveguide:
             self.is_in = lambda x,y,z: (zi <= z) & geometry(x,y,z) & (z <= zf);
         # impose waveguide refractive index variation as lambda
         self.__deltan = delta_n;
+        # set the waveguide representative color
+        self.color = color;
     def apply_refractive_index(
         self,
         X: np.ndarray | np.float128,
@@ -75,8 +80,7 @@ def visualize(
     waveguides: list[waveguide],
     x: np.ndarray,
     y: np.ndarray,
-    z: np.ndarray,
-    colors: list[str] | None = None
+    z: np.ndarray
 ) -> None:
     '''
         ## `optical.medium.visualize`
@@ -96,10 +100,6 @@ def visualize(
     F = np.zeros(WG.shape, dtype = 'bool');
     T = np.ones(WG.shape, dtype = 'bool');
 
-    # impose all voxes black if none colors are listed
-    if colors is None:
-        colors = ['black' for i in range(len(waveguides))];
-
     #initialize waveguide volume
     wg: np.ndarray = np.zeros((0,0), dtype = 'bool');
 
@@ -114,7 +114,7 @@ def visualize(
         WG = WG | wg;
         
         # impose its color
-        Colors[wg] = colors[iWG];
+        Colors[wg] = waveguide.color;
 
         iWG += 1;
 
