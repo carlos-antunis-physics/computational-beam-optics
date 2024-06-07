@@ -93,7 +93,7 @@ def split_step(
     Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
     dx, dy, dz = Lx / (Nx - 1), Ly / (Ny - 1), z[1] - z[0];
     idz = 1.0j * dz;
-    _idz = -idz;
+    _idz = - idz;
 
     # compute k-coordinates
     kx = [np.pi / (Nx * dx) * float(2 * (m - 0.5) - (Nx - 1)) for m in range(Nx)];
@@ -102,9 +102,9 @@ def split_step(
 
     # compute general parameters of propagation
     k0 = 2.0 * np.pi / wavelength;
-    _idz_by_2k = _idz / (2.0 * k0 * medium.refIndex);
+    idz_by_2k = idz / (2.0 * k0 * medium.refIndex);
     # transfer function in free space
-    H = fftshift(np.exp(_idz_by_2k * (Kx ** 2. + Ky ** 2.)));
+    H = fftshift(np.exp(idz_by_2k * (Kx ** 2. + Ky ** 2.)));
     if isinstance(boundary_condition, absorbing_boundary):
         # apply absorbing boundary conditions
         S0 = boundary_condition.apply(X,Y);
@@ -120,5 +120,5 @@ def split_step(
         S = S0 + medium.apply_nonlinearity(U);
         for waveguide in medium.waveguides:
             S += waveguide.apply_refractive_index(X,Y,Z);
-        U = np.exp(idz * S) * U;
+        U = np.exp(_idz * S) * U;
     return U;

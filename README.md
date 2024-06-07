@@ -1,10 +1,6 @@
 # COMPUTATIONAL BEAM OPTICS
 
-> Author: Carlos Antunis Bonfim da Silva Santos
-
-This repository is based on: [FiniteDiferenceBPM](https://github.com/Windier/FiniteDifferenceBPM) of [José Carlos](https://github.com/Windier)
-
-## ABOUT THIS REPO
+Author: Carlos Antunis Bonfim da Silva Santos
 
 ![Linguagem Python](https://img.shields.io/badge/Linguagem%20Python-3572A5?style=plastic)
 ![numpy: 1.26.4](https://img.shields.io/badge/numpy-1.26.4-green?style=plastic)
@@ -12,25 +8,31 @@ This repository is based on: [FiniteDiferenceBPM](https://github.com/Windier/Fin
 ![matplotlib: 3.8.3](https://img.shields.io/badge/matplotlib-3.8.3-green?style=plastic)
 ![ipython: 8.22.2](https://img.shields.io/badge/ipython-8.22.2-green?style=plastic)
 
-Understand how an optical medium (even more the non-linear ones) affects the light beam propagation are of enormous importance, also being an important source of novel applications. However, provide an analytical method cappable to comprehend this (which embbed possible non-linear effects) is quite difficult (or sometimes impossible). 
+This repository is widely inspired on [FiniteDiferenceBPM](https://github.com/Windier/FiniteDifferenceBPM) repository, implemented by [José Carlos](https://github.com/Windier).
 
-The approach on the study of general optical phenomena are broadly the using of computational estimation methods. This repository aims to provide a python module with numerical routines to solve partial diferential equations which encompass the optical media effects (even if non-linear) on light propagation.
-
-## USING THE LIBRARY
-
-To obtain the library in this repo (ensure that your computer satisfy the dependencies), first, dowload the files in `main` branch:
+To obtain the library in this repo (ensuring that your computer satisfy the required dependencies), first, download the files in `main` branch, directly [here](https://github.com/carlos-antunis-physics/computational-beam-optics/archive/refs/heads/main.zip) or by `git`:
 
 ```bash
-wget "https://github.com/carlos-antunis-physics/computational-beam-optics/archive/refs/heads/main.zip"
+# obtain the computational-beam-optics repository
+git clone 'https://github.com/carlos-antunis-physics/computational-beam-optics.git'
 ```
 
-subsequently, obtain the `optical` directory in the `main.zip` file:
+now, you have direct access to `computational-beam-optics/` directory with the library `optical/` and the `examples/` provided here.
 
-```bash
-unzip main.zip                      # unzip main branch zip file
-# extract only computational-beam-optics-main/optical/
-mv computational-beam-optics-main/optical/ ./optical/
-rm -r computational-beam-optics-main/
-```
+## ABOUT THIS REPOSITORY
 
-the optical directory contains everything in the library - now just put in your project and use.
+Understand how optical media (even more non-linear ones) affect the propagation of light beams are of enormous importance, besides an important source of novel applications. However, providing an analytical method which has the capability to encompass the effects (embedding also possible non-linear responses) in light propagation is quite difficult (or sometimes impossible).
+
+The application of computational methods to estimate how the medium disturbs the light propagation is a widely used approach on the study of the optical phenomena. This repository aims to provide a python library with numerical routines to estimate the solutions of a Dirichlet Boundary Value Problem (BVP) defined by the inhomogeneous non-linear elliptical partial differential equations
+$$
+    \imath\partial_z\psi(\mathbf{r}, z) = \frac{1}{2\kappa}\nabla^2_\perp\psi(\mathbf{r}, z) + \Delta{n}(\mathbf{r},z)\psi(\mathbf{r},z) + \mathcal{N}(\psi(\mathbf{r},z))\psi(\mathbf{r},z)\text{,}
+$$
+namely here as non-linear and inhomogeneous Helmholtz paraxial equation, furthermore to the beam entry profile
+$$
+    \psi(\mathbf{r}, z = 0) = \psi_{z = 0}(\mathbf{r})\text{,}
+$$
+which are the boundary condition of our Dirichlet BVP.
+
+### LIGHT BEAM EVALUATION ON ENTRY PLANE
+### CONSTRUCTION OF AN OPTICAL MEDIUM
+### ESTIMATION OF LIGHT BEAM PROPAGATION
