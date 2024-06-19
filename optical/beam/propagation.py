@@ -56,7 +56,7 @@ class absorbing_boundary:
         );
 
         # compute absorbance matrix
-        return 1.0j * self.__absorbance * (
+        return -1.0j * self.__absorbance * (
           __abc(+(X - self.__x0), self.__Lx, self.__w_x) +
           __abc(-(X - self.__x0), self.__Lx, self.__w_x) +
           __abc(+(Y - self.__y0), self.__Ly, self.__w_y) +
