@@ -1,124 +1,90 @@
+'''
+    useful packages importing
+'''
+
 import numpy as np
 from scipy.fft import fft2, ifft2, fftshift
-from .. import medium
+
+from .. import Medium as medium
 
 '''
-    absorbing boundaries construction.
+    boundary conditions
 '''
 
-class absorbing_boundary:
+# absorbing boundary condition
+class absorbing:
+    '''
+        class optical.beam.propagation.absorbing
+            creates an absorbing layer as boundary condition to propagation methods.
+    '''
+    __wx: float;                                # x axis width of absorbing layer
+    __wy: float;                                # y axis width of absorbing layer
+    __absorbance: float;                        # absorbance of absorbing layer
     def __init__(
         self,
-        lengths: tuple[np.float128, np.float128],
-        widths: tuple[np.float128, np.float128],
-        absorbance: np.float128,
-        center: tuple[np.float128, np.float128] = (0.,0.)
+        widths: tuple[float, float],            # x and y axis widths of boundary absorbing layer
+        absorbance: float                       # absorbance of absorbing layer
     ) -> None:
+        # evaluate absorbing layer parameters
+        self.__wx, self.__wy = widths;          # absorbing layer widths
+        self.__absorbance = 1.j * absorbance;   # absorbance of layer
+    def __call__(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
         '''
-        ## `optical.beam.propagation.absorbing_boudary`
-            constructs a `widths` sized rectangular absorbing layer with informed
-            `absorbance` for refered `lengths` of computational window, as the
-            boundary condition to propagation methods.
-
-        ### syntax
-            `U = optical.beam.propagation.absorbing_boundary((Lx,Ly), (wx, wy), alpha)`
-        #### optional parameters
-            `center`: `tuple[numpy.float128, numpy.float128]
-                cartesian coordinates of computational window center.
+            evaluate the absorbing layer effects on computational window.
         '''
-        # compute absorbing layer sizes
-        Lx, Ly = lengths;
-        self.__Lx, self.__Ly = Lx / 2., Ly / 2.;
-        self.__w_x, self.__w_y = widths;
-        self.__x0, self.__y0 = center;
-
-        # construct a waveguide in boundaries with refered refractive index
-        self.__absorbance = absorbance;
-    def apply(
-        self,
-        X: np.ndarray,
-        Y: np.ndarray
-    ) -> np.ndarray:
-        '''
-        ## `[optical.beam.propagation.absorbing_boundary] AB.apply`
-            obtain the absorbance of boundary in (`X`,`Y`).
-
-        ### syntax
-            `AB.apply(X,Y)`
-        '''
-        # inform absorbing refractive index shape
-        __abc = lambda coordinate, L, width: np.where(
-            # any coordinate in absorbing layer
-            ((coordinate) > (L - width)),
-            # refractive index with increasing absorbing refractive index
-            ((coordinate - (L - width)) / width) ** 3.,
-            0.                      # and zero elsewhere
-        );
-
-        # compute absorbance matrix
-        return -1.0j * self.__absorbance * (
-          __abc(+(X - self.__x0), self.__Lx, self.__w_x) +
-          __abc(-(X - self.__x0), self.__Lx, self.__w_x) +
-          __abc(+(Y - self.__y0), self.__Ly, self.__w_y) +
-          __abc(-(Y - self.__y0), self.__Ly, self.__w_y)
+        # evaluate parameters of computational window
+        Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
+        Lx, Ly = Lx / 2., Ly / 2.;
+        # construct absorbing layer
+        ABS = lambda u, L, w: np.where(u > L - w, ((u - (L - w)) / w) ** 2., 0.);
+        return -self.__absorbance * (
+            ABS(+X,Lx,self.__wx) +
+            ABS(-X,Lx,self.__wx) +
+            ABS(+Y,Ly,self.__wy) +
+            ABS(-Y,Ly,self.__wy)
         );
 
 '''
-    split-step propagation method.
+    computational estimation of light beam propagation
 '''
 
-def split_step(
+# split-step propagation method
+def split_step_propagate(
     U: np.ndarray,
-    wavelength: np.float128,
     region: tuple[np.ndarray, np.ndarray],
     z: np.ndarray,
     medium: medium,
-    boundary_condition: None | absorbing_boundary = None
+    wave_length: float,
+    boundary_condition: absorbing | None = None
 ) -> np.ndarray:
-    '''
-        ## `optical.beam.propagation.split_step`
-            solve nonlinear inhomogeneous paraxial wave equation in (2+1)
-            dimensions using BPM split step spectral method.
-
-        ### syntax
-            `optical.beam.propagation.split_step(U,lambda,(X,Y),z,medium)`
-        #### optional parameters
-            `boundary_condition`:
-              `optical.beam.propagation.absorbing_boundary`
-                absorbing boundary condition to use in propagation.
-    '''
-    # compute coordinates
-    X, Y = region;                  # x, y axis meshgrids
-    Nx, Ny = X.shape;
+    # evaluate coordinates on computational window
+    X, Y = region;                              # x, y meshgrid of coordinates on region
+    Nx, Ny = U.shape;
     Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
     dx, dy, dz = Lx / (Nx - 1), Ly / (Ny - 1), z[1] - z[0];
-    idz = 1.0j * dz;
-    _idz = - idz;
-
-    # compute k-coordinates
-    kx = [np.pi / (Nx * dx) * float(2 * (m - 0.5) - (Nx - 1)) for m in range(Nx)];
-    ky = [np.pi / (Ny * dy) * float(2 * (m - 0.5) - (Ny - 1)) for m in range(Ny)];
+    Im_dz = 1.j * dz;
+    # evaluate Fourier plane coordinates
+    kx = np.linspace(-Nx, +Nx, Nx) * np.pi / (Nx * dx);
+    ky = np.linspace(-Ny, +Ny, Ny) * np.pi / (Ny * dy);
     Kx, Ky = np.meshgrid(kx, ky);
-
     # compute general parameters of propagation
-    k0 = 2.0 * np.pi / wavelength;
-    idz_by_2k = idz / (2.0 * k0 * medium.refIndex);
-    # transfer function in free space
-    H = fftshift(np.exp(idz_by_2k * (Kx ** 2. + Ky ** 2.)));
-    if isinstance(boundary_condition, absorbing_boundary):
-        # apply absorbing boundary conditions
-        S0 = boundary_condition.apply(X,Y);
-    else:
-        # input no absorption in computational window
-        S0 = np.zeros(U.shape);
-
-    # estimate propagation
-    for Z in z:
-        # evaluate free space propagation effects in Fourier plane
-        U = ifft2(H * fft2(U));
-        # evaluate nonlinear and inhomogeneity effects in direct space
-        S = S0 + medium.apply_nonlinearity(U);
-        for waveguide in medium.waveguides:
-            S += waveguide.apply_refractive_index(X,Y,Z);
-        U = np.exp(_idz * S) * U;
+    k0 = 2. * np.pi / wave_length;
+    Im_dz_by_2k = Im_dz / (2. * k0 * medium.n0);
+    H = fftshift(np.exp(Im_dz_by_2k * (Kx ** 2. + Ky ** 2.)));
+    if boundary_condition == None:
+        S0 = np.zeros(U.shape);                 # there are no additional effects
+        for _z in z:
+            # evaluate free space propagation effects in Fourier plane
+            U = ifft2(H * fft2(U));
+            # evaluate inhomogeneity and non-linear effects in transverse plane
+            S = S0 + medium.apply_nonlinearity(U) + medium.apply_refractive_index(X,Y,_z);
+            U = np.exp(-Im_dz * S) * U;
+    elif isinstance(boundary_condition, absorbing):
+        S0 = boundary_condition(X, Y);          # insert absorbing layer effects
+        for _z in z:
+            # evaluate free space propagation effects in Fourier plane
+            U = ifft2(H * fft2(U));
+            # evaluate inhomogeneity and non-linear effects in transverse plane
+            S = S0 + medium.apply_nonlinearity(U) + medium.apply_refractive_index(X,Y,_z);
+            U = np.exp(-Im_dz * S) * U;
     return U;
