@@ -17,7 +17,7 @@ To obtain the library in this repo (ensuring that your computer satisfy the requ
 git clone 'https://github.com/carlos-antunis-physics/computational-beam-optics.git'
 ```
 
-now, you have direct access to `computational-beam-optics/` directory with the library `optical/` and the `examples/` provided here.
+now, you have direct access to `computational-beam-optics/` directory with the library `optical/` and the `examples/` (it's outdated, and will be updated soon) provided here.
 
 ## ABOUT THIS REPOSITORY
 
