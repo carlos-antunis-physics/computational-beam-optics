@@ -146,7 +146,6 @@ def bessel(
     k = wave_number(wave_length);               # wave number of the beam
     _Im_beta = -1.j * np.sqrt(np.abs(k ** 2. - kt ** 2.));
     _Im_m = 1.j * m;
-
     # construct entry profile
     return beam(
         function = lambda r, phi: A * sf.jv(m, kt * r) * np.exp(_Im_beta * z + _Im_m * phi),
