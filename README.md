@@ -7,7 +7,7 @@ Author: Carlos Antunis Bonfim da Silva Santos
 ![scipy: 8.2](https://img.shields.io/badge/scipy-8.2-green?style=plastic)
 ![matplotlib: 3.8.3](https://img.shields.io/badge/matplotlib-3.8.3-green?style=plastic)
 ![ipython: 8.22.2](https://img.shields.io/badge/ipython-8.22.2-green?style=plastic)
-![scikit-image: 0.24.0](https://img.shields.io/badge/scikit-image-0.24.0-green?style=plastic)
+![scikit-image: 0.24.0](https://img.shields.io/badge/scikit%20image-0.24.0-green?style=plastic)
 
 This repository is widely inspired on [FiniteDiferenceBPM](https://github.com/Windier/FiniteDifferenceBPM) repository, implemented by [José Carlos](https://github.com/Windier).
 
