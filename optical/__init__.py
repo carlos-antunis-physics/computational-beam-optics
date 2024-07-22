@@ -29,12 +29,16 @@ rayleigh_range: callable = lambda w0, wave_length: np.pi * w0 ** 2. / wave_lengt
 # gaussian beam width along propagation
 beam_width: callable = lambda z, z0, w0: w0 * np.sqrt(1. + (z / z0) ** 2.);
 # gaussian beam radius of curvature  along propagation
-radius_of_curvature: callable = lambda z, z0: np.infty if z == 0. else z * (1 + (z0 / z) ** 2.);
+radius_of_curvature: callable = lambda z, z0: np.inf if z == 0. else z * (1 + (z0 / z) ** 2.);
 # gaussian beam gouy phase along propagation
 gouy_phase: callable = lambda z, z0: np.arctan2(z, z0);
 
 # additional phase due to oblique incidence of an optical beam
-def incidence_phase(wave_length: float, angulation: tuple[float, float]) -> callable:
+def oblique_incidence_phase(
+    wave_length: float,
+    angulation: tuple[float, float],
+    polar: bool = False
+) -> callable:
     '''
         optical.incidence_phase
             evaluate the additional phase due to oblique incidence of an optical beam.
@@ -43,15 +47,19 @@ def incidence_phase(wave_length: float, angulation: tuple[float, float]) -> call
     K = wave_number(wave_length);
     # obtain angulation in radians
     ang_x, ang_y = angulation;
-    k_x, k_y = K * np.tan(ang_x * np.pi / 180.), K * np.tan(ang_y * np.pi / 180.);
-    return lambda x, y: -(k_x * x + k_y * y);
+    deg_to_rad = np.pi / 180.;
+    k_x, k_y = K * np.tan(ang_x * deg_to_rad), K * np.tan(ang_y * deg_to_rad);
+    if polar:
+        return lambda r, phi: -r * (k_x * np.cos(phi) + k_y * np.sin(phi));
+    else:
+        return lambda x, y: -(k_x * x + k_y * y);
 
 # optical beam construction
 def Beam(
-    function: np.ufunc,                         # light beam envelope            
+    profile: np.ufunc,                          # light beam envelope            
     region: tuple[np.ndarray, np.ndarray],      # transverse plane region to evaluate field
     phase: float | np.ndarray | np.ufunc = 0.,  # additional phase of the optical beam
-    center: tuple[float, float] = (0., 0.)      # coordinates whereas beam are centered
+    center: tuple[float, float] = (0., 0.),     # coordinates whereas beam are centered
 ) -> np.ndarray:
     '''
         optical.Beam
@@ -64,10 +72,10 @@ def Beam(
     # evaluate light beam envelope along transverse plane properly
     x, y = X - x0, Y + y0;                      # x, y coordinates in reference frame centered at center
     try:                                        # try to evaluate in cartesian coordinates
-        transverse_profile = function(x = x, y = y);
+        transverse_profile = profile(x = x, y = y);
     except TypeError:                           # except if it is described in polar coordinates
         r, phi = _cart2pol(x, y);
-        transverse_profile = function(r = r, phi = phi);
+        transverse_profile = profile(r = r, phi = phi);
     finally:
         # ensure the optical beam is a complex function
         transverse_profile = transverse_profile.astype(np.complex128);

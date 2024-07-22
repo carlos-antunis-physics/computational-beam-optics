@@ -61,23 +61,22 @@ def split_step_propagate(
     X, Y = region;                              # x, y meshgrid of coordinates on region
     Nx, Ny = U.shape;
     Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
-    dx, dy, dz = Lx / (Nx - 1), Ly / (Ny - 1), z[1] - z[0];
+    dz = z[1] - z[0];
     Im_dz = 1.j * dz;
     # evaluate Fourier plane coordinates
-    kx = np.linspace(-Nx, +Nx, Nx) * np.pi / (Nx * dx);
-    ky = np.linspace(-Ny, +Ny, Ny) * np.pi / (Ny * dy);
+    kx = np.linspace(-np.floor(Nx / 2), +np.floor(Nx / 2), Nx) * np.pi / Lx;
+    ky = np.linspace(-np.floor(Ny / 2), +np.floor(Ny / 2), Ny) * np.pi / Ly;
     Kx, Ky = np.meshgrid(kx, ky);
     # compute general parameters of propagation
     k0 = 2. * np.pi / wave_length;
     Im_dz_by_2k = Im_dz / (2. * k0 * medium.n0);
     H = fftshift(np.exp(Im_dz_by_2k * (Kx ** 2. + Ky ** 2.)));
     if boundary_condition == None:
-        S0 = np.zeros(U.shape);                 # there are no additional effects
         for _z in z:
             # evaluate free space propagation effects in Fourier plane
             U = ifft2(H * fft2(U));
             # evaluate inhomogeneity and non-linear effects in transverse plane
-            S = S0 + medium.apply_nonlinearity(U) + medium.apply_refractive_index(X,Y,_z);
+            S = medium.apply_nonlinearity(U) + medium.apply_refractive_index(X,Y,_z);
             U = np.exp(-Im_dz * S) * U;
     elif isinstance(boundary_condition, absorbing):
         S0 = boundary_condition(X, Y);          # insert absorbing layer effects
