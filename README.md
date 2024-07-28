@@ -1,6 +1,7 @@
 # Computational beam optics
 
 ![Python](https://img.shields.io/badge/Python-3572A5?style=plastic)
+![Fortran](https://img.shields.io/badge/Fortran-4d41b1?style=plastic)
 ![numpy: 1.26.4](https://img.shields.io/badge/numpy-1.26.4-green?style=plastic)
 ![scipy: 8.2](https://img.shields.io/badge/scipy-8.2-green?style=plastic)
 ![matplotlib: 3.8.3](https://img.shields.io/badge/matplotlib-3.8.3-green?style=plastic)
