@@ -4,7 +4,7 @@ The structure of `optical` module is the following
 
 > **`optical`**
 >
-> base methods and utilitaries for setup elementos of light propagation on optical media estimation.
+> base methods, objects and utilitaries for setup elements of light propagation on optical media estimation.
 >
 > > **`Beam`**
 > >
