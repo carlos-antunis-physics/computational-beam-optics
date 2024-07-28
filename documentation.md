@@ -88,7 +88,7 @@ The structure of `optical` module is the following
 > > initializes a transparent boundary to act as boundary condition on propagation methods.
 
 > **[work in progress]** `optical.Beam.Propagation.boundary.perfectly_matched_layer`
-> initializes an perfectly matched layer to act as boundary condition on propagation methods.
+> > initializes an perfectly matched layer to act as boundary condition on propagation methods.
 
 ### methods of `optical.Waveguide`
 
