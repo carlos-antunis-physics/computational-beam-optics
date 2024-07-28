@@ -44,4 +44,4 @@ The understanding of how light propagation is affected by an optical media (even
 > > cd ../../
 > > ```
 > >
-> > for usage references, see the [`examples`](./examples/) provided here or the [`documentation`](./documentation.md).
+> > for usage references, see the [`examples`](./examples/) (will be updated soon) provided here or the [`documentation`](./documentation.md).
