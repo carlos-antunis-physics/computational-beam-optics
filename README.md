@@ -39,13 +39,13 @@ The understanding of how light propagation is affected by an optical media (even
 > > ```bash
 > > mv ./computational-beam-optics/optical/ ./optical/
 > > rm -r ./computational-beam-optics/
+> > ```
 > >
-> > > if need to recompile `optical/Utils/linear_algebra.f95` file
+> > > if need to recompile `optical/Utils/linear_algebra.f95` file, use:
 > > >
-> > > cd ./optical/Propagation/
+> > > ```bash
 > > > f2py -m linear_algebra linear_algebra.f95 -h linear_algebra.pyf --overwrite-signature
 > > > f2py -c linear_algebra.pyf linear_algebra.f95
-> > >  cd ../../
 > > > ```
 > >
 > > for usage references, see the [`examples`](./examples/) (will be updated soon) provided here or the [`documentation`](./documentation.md).
