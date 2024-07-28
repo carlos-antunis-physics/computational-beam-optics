@@ -95,7 +95,7 @@ def oblique_phasor(
 ) -> tuple[float, float]:
     '''
         optical.oblique_phasor
-            evoluate the wave vector for the given angulations.
+            evaluate the wave vector for the given angulations.
     '''
     # evaluate coordinates of interest region
     X, Y = region;                              # cartesian coordinates meshgrid
