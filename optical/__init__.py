@@ -219,7 +219,7 @@ class medium:
         X: np.ndarray,
         Y: np.ndarray,
         z: np.array,
-        cmap: plt.Colormap = plt.cm.bone
+        cmap = plt.cm.bone
     ) -> None:
         '''
             shows a graphical representation of waveguides written on medium.
