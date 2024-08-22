@@ -5,7 +5,7 @@
         non-linear responses).
 '''
 
-__version__ = '1.0.1';                          # optical module version
+__version__ = '1.0.2';                          # optical module version
 __name__ = 'optical';                           # module standard name
 
 '''
