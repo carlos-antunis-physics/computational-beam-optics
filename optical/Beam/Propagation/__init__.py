@@ -93,23 +93,32 @@ def trotter_suzuki(
     nu_x, nu_y = np.meshgrid(nu_x, nu_y);
     # evaluate propagation parameters
     dz = (zf - z0) / float(iterations);
-    Im_dz = 1.j * dz; half_dz = dz / 2.;
-    Imhalf_dz = 1.j * half_dz;
+    Im_dz = 1.j * dz;
+    half_dz = dz / 2.; quarter_dz = dz / 4.;
+    Imhalf_dz = 1.j * half_dz; Imquarter_dz = 1.j * quarter_dz;
     Imhalfdz_pi_lambda = Imhalf_dz * np.pi * (wave_length / medium.n0);
-    FS_prop = fftshift(np.exp(Imhalfdz_pi_lambda * (nu_x ** 2. + nu_y ** 2.)));
+    Imquarterdz_pi_lambda = Imquarter_dz * np.pi * (wave_length / medium.n0);
+    FS_prop = {
+        half_dz: fftshift(np.exp(Imhalfdz_pi_lambda * (nu_x ** 2. + nu_y ** 2.))),
+        quarter_dz: fftshift(np.exp(Imquarterdz_pi_lambda * (nu_x ** 2. + nu_y ** 2.)))
+    };
     # apply specified boundary conditions
     S0 = boundary(X,Y) if isinstance(boundary, ABC) else np.zeros_like(field);
     # estimate propagation effects on light beam transverse profile
     z = z0;
     for iteration in range(iterations):
+        # evaluate free space propagation effects in Fourier plane
+        field = ifft2(FS_prop[quarter_dz] * fft2(field));
         # evluate inhomogeneity and non-linear effects in transverse plane
         z += iteration * half_dz;
         field *= np.exp(-Im_dz * (S0 + medium.non_linearity(field) + medium(X,Y,z)));
         # evaluate free space propagation effects in Fourier plane
-        field = ifft2(FS_prop * fft2(field));
+        field = ifft2(FS_prop[half_dz] * fft2(field));
         # evluate inhomogeneity and non-linear effects in transverse plane
         z += iteration * half_dz;
         field *= np.exp(-Im_dz * (S0 + medium.non_linearity(field) + medium(X,Y,z)));
+        # evaluate free space propagation effects in Fourier plane
+        field = ifft2(FS_prop[quarter_dz] * fft2(field));
         # ensure zero at boundaries
         field[-1:0,:] = 0.; field[:,-1:0] = 0.;
     return field;
