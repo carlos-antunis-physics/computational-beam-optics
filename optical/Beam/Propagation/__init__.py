@@ -21,78 +21,113 @@ from .boundary import transparent as TBC
 from .boundary import perfectly_matched_layer as PML
 
 '''
-    computational estimation of light beam propagation
+    computational estimators of light beam propagation
 '''
 
 def split_step(
     field: np.ndarray,
     region: tuple[np.ndarray, np.ndarray],
-    z: np.array,
     medium: medium,
     wave_length: float,
-    boundary: ABC | None = None
+    zf: float,
+    z0: float = 0.,
+    iterations: int = 1,
+    boundary: None | ABC = None
 ) -> np.ndarray:
     '''
         optical.Propagation.split_step
-            estimate the field propagated along z points on medium by
-            split-step beam propagation method.
+            estimate the field propagated along z axis through a medium
+            using split-step beam propagation.
     '''
-    # evaluate simulation parameters
-    X, Y = region;                              # region meshgrid of cartesian coordinates
+    # evaluate transverse plane parameters
+    X, Y = region;                              # transverse plane cartesian meshgrid
     Nx, Ny = field.shape;
     Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
-    dx, dy, dz = X[0,1] - X[0,0], Y[1,0] - Y[0,0], z[-1] - z[0];
-    Im_dz = 1.j * dz;
-    # evaluate fourier plane parameters
-    if Nx % 2 == 0:
-        nu_x = np.linspace(-np.floor(Nx/2.), +np.floor((Nx - 1.)/2.), Nx) / Lx;
-    else:
-        nu_x = np.linspace(-np.floor(Nx/2.), +np.floor(Nx/2.), Nx) / Lx;
-    if Ny % 2 == 0:
-        nu_y = np.linspace(-np.floor(Ny/2.), +np.floor((Ny - 1.)/2.), Ny) / Ly;
-    else:
-        nu_y = np.linspace(-np.floor(Ny/2.), +np.floor(Ny/2.), Ny) / Ly;
+    # evaluate Fourier plane parameters
+    _r = {'x': 1 - (Nx % 2), 'y': 1 - (Ny % 2)};
+    nu_x = np.linspace(-np.floor(Nx/2), +np.floor((Nx - _r['x'])/2), Nx) / Lx;
+    nu_y = np.linspace(-np.floor(Ny/2), +np.floor((Ny - _r['y'])/2), Ny) / Ly;
     nu_x, nu_y = np.meshgrid(nu_x, nu_y);
-    Im_pi_wvl = Im_dz * np.pi * (wave_length / medium.n0);
-    free_space_prop = fftshift(np.exp(Im_pi_wvl * (nu_x ** 2. + nu_y ** 2.)));
-    # evaluate propagation with refered boundary conditions
-    if boundary == None:
-        S = np.zeros_like(field); S0 = S;
-        for _z in z:
-            # evaluate free space propagation effects in Fourier plane
-            field = ifft2(free_space_prop * fft2(field));
-            # evaluate inhomogeneity and non-linear effects in transverse plane
-            S = S0 + medium.non_linearity(field) + medium(X,Y,_z);
-            field = np.exp(-Im_dz * S) * field;
-            # ensure zero at boundaries
-            field[-1:0,:] = 0.; field[:,-1:0] = 0.;
-        return field;
-    elif isinstance(boundary, ABC):
-        S = np.zeros_like(field);
-        S0 = boundary(X, Y);                    # insert absorbing layer effects
-        for _z in z:
-            # evaluate free space propagation effects in Fourier plane
-            field = ifft2(free_space_prop * fft2(field));
-            # evaluate inhomogeneity and non-linear effects in transverse plane
-            S = S0 + medium.non_linearity(field) + medium(X,Y,_z);
-            field = np.exp(-Im_dz * S) * field;
-            # ensure zero at boundaries
-            field[-1:0,:] = 0.; field[:,-1:0] = 0.;
-        return field;
+    # evaluate propagation parameters
+    dz = (zf - z0) / float(iterations);
+    Im_dz = 1.j * dz;
+    Imdz_pi_lambda = Im_dz * np.pi * (wave_length / medium.n0);
+    FS_prop = fftshift(np.exp(Imdz_pi_lambda * (nu_x ** 2. + nu_y ** 2.)));
+    # apply specified boundary conditions
+    S0 = boundary(X,Y) if isinstance(boundary, ABC) else np.zeros_like(field);
+    # estimate propagation effects on light beam transverse profile
+    z = z0;
+    for iteration in range(iterations):
+        z += iteration * dz;
+        # evaluate free space propagation effects in Fourier plane
+        field = ifft2(FS_prop * fft2(field));
+        # evluate inhomogeneity and non-linear effects in transverse plane
+        field *= np.exp(-Im_dz * (S0 + medium.non_linearity(field) + medium(X,Y,z)));
+        # ensure zero at boundaries
+        field[-1:0,:] = 0.; field[:,-1:0] = 0.;
+    return field;
+
+def trotter_suzuki(
+    field: np.ndarray,
+    region: tuple[np.ndarray, np.ndarray],
+    medium: medium,
+    wave_length: float,
+    zf: float,
+    z0: float = 0.,
+    iterations: int = 1,
+    boundary: None | ABC = None
+) -> np.ndarray:
+    '''
+        optical.Propagation.trotter_suzuki
+            estimate the field propagated along z axis through a medium
+            using trotter-suzuki aproximation of beam propagation.
+    '''
+    # evaluate transverse plane parameters
+    X, Y = region;                              # transverse plane cartesian meshgrid
+    Nx, Ny = field.shape;
+    Lx, Ly = X[0,-1] - X[0,0], Y[-1,0] - Y[0,0];
+    # evaluate Fourier plane parameters
+    _r = {'x': 1 - (Nx % 2), 'y': 1 - (Ny % 2)};
+    nu_x = np.linspace(-np.floor(Nx/2), +np.floor((Nx - _r['x'])/2), Nx) / Lx;
+    nu_y = np.linspace(-np.floor(Ny/2), +np.floor((Ny - _r['y'])/2), Ny) / Ly;
+    nu_x, nu_y = np.meshgrid(nu_x, nu_y);
+    # evaluate propagation parameters
+    dz = (zf - z0) / float(iterations);
+    Im_dz = 1.j * dz;
+    Imhalf_dz = Im_dz / 2.;
+    Imhalfdz_pi_lambda = Imhalf_dz * np.pi * (wave_length / medium.n0);
+    FS_prop = fftshift(np.exp(Imhalfdz_pi_lambda * (nu_x ** 2. + nu_y ** 2.)));
+    # apply specified boundary conditions
+    S0 = boundary(X,Y) if isinstance(boundary, ABC) else np.zeros_like(field);
+    # estimate propagation effects on light beam transverse profile
+    z = z0;
+    for iteration in range(iterations):
+        z += iteration * dz;
+        # evaluate free space propagation effects in Fourier plane
+        field = ifft2(FS_prop * fft2(field));
+        # evluate inhomogeneity and non-linear effects in transverse plane
+        field *= np.exp(-Im_dz * (S0 + medium.non_linearity(field) + medium(X,Y,z)));
+        # evaluate free space propagation effects in Fourier plane
+        field = ifft2(FS_prop * fft2(field));
+        # ensure zero at boundaries
+        field[-1:0,:] = 0.; field[:,-1:0] = 0.;
+    return field;
 
 def crank_nicolson(
     field: np.ndarray,
     region: tuple[np.ndarray, np.ndarray],
-    z: np.array,
     medium: medium,
     wave_length: float,
-    boundary: ABC | TBC | PML | None = None
+    zf: float,
+    z0: float = 0.,
+    iterations: int = 1,
+    boundary: None | ABC | TBC | PML = None
 ) -> np.ndarray:
     '''
         optical.Propagation.crank_nicolson
-            estimate the field propagated along z points on medium by crank-nicolson
-            scheme for finite differences on beam propagation method.
+            estimate the field propagated along z axis through a medium
+            using crank-nicolson finite diferences scheme.
     '''
-    # evaluate simulation parameters
-    X, Y = region;                              # region meshgrid of cartesian coordinates
-    dx, dy, dz = X[0,1] - X[0,0], Y[1,0] - Y[0,0], z[-1] - z[0];
+    raise NotImplementedError(
+        "This numerical method hasn't been implemented yet."
+    );
