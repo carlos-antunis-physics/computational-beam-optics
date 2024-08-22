@@ -41,7 +41,7 @@ The understanding of how light propagation is affected by an optical media (even
 > > rm -r ./computational-beam-optics/
 > > ```
 > >
-> > > if need to recompile `optical/Utils/linear_algebra.f95` file, use:
+> > > To compile `optical/Utils/linear_algebra.f95` to a python module, use:
 > > >
 > > > ```bash
 > > > f2py -m linear_algebra linear_algebra.f95 -h linear_algebra.pyf --overwrite-signature
