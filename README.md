@@ -48,4 +48,4 @@ The understanding of how light propagation is affected by an optical media (even
 > > > f2py -c linear_algebra.pyf linear_algebra.f95
 > > > ```
 > >
-> > for usage references, see the [`examples`](./examples/) (will be updated soon) provided here or the [`documentation`](./documentation.md).
+<!-- > > for usage references, see the [`examples`](./examples/) (will be updated soon) provided here or the [`documentation`](./documentation.md). -->
