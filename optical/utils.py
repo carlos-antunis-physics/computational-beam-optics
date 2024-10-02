@@ -53,14 +53,14 @@ def _evaluate(
 wave_number: np.ufunc = lambda wave_length, n0 = 1.:\
     2. * np.pi * n0 / wave_length;
 # Rayleigh range of a gaussian beam
-rayleigh_range: np.ufunc = lambda w0, wave_length:\
-    w0 ** 2. * wave_number(wave_length);
+rayleigh_range: np.ufunc = lambda w0, wave_length, n0 = 1.:\
+    w0 ** 2. * wave_number(wave_length, n0 = n0) / 2.;
 # beam width of a gaussian beam
 beam_waist: np.ufunc = lambda z, z0, w0:\
-    w0 if z0 == 0. else w0 * np.sqrt(1. + (z / z0) ** 2.);
+    w0 if z == 0. else w0 * np.sqrt(1. + (z / z0) ** 2.);
 # radius of curvature of a gaussian beam
 radius_of_curvature: np.ufunc = lambda z, z0:\
-    np.inf if z == 0. else np.sqrt(1. + (z0 / z) ** 2.);
+    np.inf if z == 0. else z * np.sqrt(1. + (z0 / z) ** 2.);
 # Gouy phase of an optical beam
 gouy_phase: np.ufunc = lambda z, z0:\
     np.arctan2(z, z0);

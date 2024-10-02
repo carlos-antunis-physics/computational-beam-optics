@@ -41,7 +41,7 @@ def split_step(
     k_x, k_y = np.meshgrid(k_x, k_y);
     # compute free-space propagation effects
     dz = (zf - z0) / float(iterations);
-    Im_dz = 1.j * dz / 2.;
+    Im_dz = 1.j * dz;
     _2k = 2. * wave_number(wave_length, n0 = medium.n0);
     exp_jH0dz = np.exp(Im_dz * (k_x**2. + k_y**2.) / _2k);
     # obtain boundary conditions
@@ -83,7 +83,7 @@ def trotter_suzuki(
     k_x, k_y = np.meshgrid(k_x, k_y);
     # compute free-space propagation effects
     dz = (zf - z0) / float(iterations);
-    half_dz = dz / 2.;
+    half_dz = dz;
     Im_dz = 1.j * half_dz / 2.;
     _2k = 2. * wave_number(wave_length, n0 = medium.n0);
     exp_jH0quarterdz = np.exp(Im_dz * (k_x**2. + k_y**2.) / _2k);
