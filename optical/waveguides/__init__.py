@@ -182,7 +182,7 @@ def cylindrical(
             zf = zf
         );
     else:
-        rect = lambda u, L: (np.abs(u) < 0.5 * L);
+        rect = lambda u, R: (np.abs(u) < R);
         return waveguide(
             delta_n = delta_n,
             function = lambda r, _, z: rect(r, R(z)),

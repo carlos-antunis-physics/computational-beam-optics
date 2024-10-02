@@ -131,7 +131,7 @@ def visualize(
     # evaluate refractive index alteration due to inhomogeneities
     n_vol = np.zeros_like(z_vol) + sum([wg(x_vol, y_vol, z_vol) for wg in waveguides]);
     # compute refractive index alteration iso surface
-    iso_value = sum([wg.delta_n for wg in waveguides]) / len(waveguides);
+    iso_value = .5 * sum([wg.delta_n for wg in waveguides]) / len(waveguides);
     verts, faces, _, _ = measure.marching_cubes(n_vol, iso_value);
     # plot isosurface as a triangular surface
     ax.plot_trisurf(verts[:, 0], verts[:, 1], faces, verts[:, 2], cmap = cmap);

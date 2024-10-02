@@ -23,7 +23,7 @@ def split_step(
     medium: medium,
     region: tuple[np.ndarray, np.ndarray],
     zf: float,
-    z0: float = 0.,
+    zi: float = 0.,
     iterations: int = 1,
     boundary: None | ABC = None
 ) -> np.ndarray:
@@ -40,14 +40,14 @@ def split_step(
     k_x, k_y = 2. * np.pi * fftfreq(Nx, dx), 2. * np.pi * fftfreq(Ny, dy);
     k_x, k_y = np.meshgrid(k_x, k_y);
     # compute free-space propagation effects
-    dz = (zf - z0) / float(iterations);
+    dz = (zf - zi) / float(iterations);
     Im_dz = 1.j * dz;
     _2k = 2. * wave_number(wave_length, n0 = medium.n0);
     exp_jH0dz = np.exp(Im_dz * (k_x**2. + k_y**2.) / _2k);
     # obtain boundary conditions
     S0 = boundary(X, Y) if isinstance(boundary, ABC) else np.zeros_like(field);
     # estimate propagation effects on light beam
-    z = z0;
+    z = zi;
     for _ in range(iterations):
         # free space propagation
         field = ifft2(exp_jH0dz * fft2(field));
@@ -66,7 +66,7 @@ def trotter_suzuki(
     medium: medium,
     region: tuple[np.ndarray, np.ndarray],
     zf: float,
-    z0: float = 0.,
+    zi: float = 0.,
     iterations: int = 1,
     boundary: None | ABC = None
 ) -> np.ndarray:
@@ -82,7 +82,7 @@ def trotter_suzuki(
     k_x, k_y = 2. * np.pi * fftfreq(Nx, dx), 2. * np.pi * fftfreq(Ny, dy);
     k_x, k_y = np.meshgrid(k_x, k_y);
     # compute free-space propagation effects
-    dz = (zf - z0) / float(iterations);
+    dz = (zf - zi) / float(iterations);
     half_dz = dz;
     Im_dz = 1.j * half_dz / 2.;
     _2k = 2. * wave_number(wave_length, n0 = medium.n0);
@@ -91,7 +91,7 @@ def trotter_suzuki(
     # obtain boundary conditions
     S0 = boundary(X, Y) if isinstance(boundary, ABC) else np.zeros_like(field);
     # estimate propagation effects on light beam
-    z = z0;
+    z = zi;
     for _ in range(iterations):
         # free space propagation
         field = ifft2(exp_jH0halfdz * fft2(field));
@@ -125,7 +125,7 @@ def crank_nicolson(
     medium: medium,
     region: tuple[np.ndarray, np.ndarray],
     zf: float,
-    z0: float = 0.,
+    zi: float = 0.,
     iterations: int = 1,
     boundary: None | ABC | TBC | PML = None
 ) -> np.ndarray:
@@ -144,7 +144,7 @@ def finite_elements(
     medium: medium,
     region: tuple[np.ndarray, np.ndarray],
     zf: float,
-    z0: float = 0.,
+    zi: float = 0.,
     iterations: int = 1,
     boundary: None | ABC | TBC | PML = None
 ) -> np.ndarray:
