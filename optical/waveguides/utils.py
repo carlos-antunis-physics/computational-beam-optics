@@ -4,11 +4,6 @@
 
 # external python imports
 import numpy as np
-from matplotlib import pyplot as plt
-from skimage import measure
-
-# interal optical python module imports
-from optical import waveguide
 
 '''
     centering methods
@@ -93,51 +88,3 @@ def curved(
                 lambda z: r_i[0] + (cos_phi * x0(z) - sin_phi * y0(z)),
                 lambda z: r_i[1] + (sin_phi * x0(z) + cos_phi * y0(z))
             );
-
-'''
-    waveguides visualizations
-'''
-
-def visualize(
-    waveguides: list[waveguide],
-    X: np.ndarray, Y: np.ndarray, z: np.array,
-    fig: plt.Figure,
-    cmap = plt.cm.bone
-) -> None:
-    '''
-        optical.waveguides.visualize
-            shows a graphical representation of a waveguide list.
-    '''
-    # create a three-dimensional figure within the computational window
-    ax = fig.add_subplot(projection = '3d');
-    ax.view_init(elev = 30., azim = 80.);                       # view angulation
-    # free space has no waveguides to show
-    if waveguides == list():
-        return;
-    # evaluate cartesian coordinates of interest points
-    x, y = X[0,:], Y[:,0];
-    z_vol, y_vol, x_vol = np.meshgrid(z, y, x);
-    # evaluate refractive index alteration due to inhomogeneities
-    n_vol = np.zeros_like(z_vol) + sum([wg(x_vol, y_vol, z_vol) for wg in waveguides]);
-    # compute refractive index alteration iso surface
-    iso_value = .5 * sum([wg.delta_n for wg in waveguides]) / len(waveguides);
-    verts, faces, _, _ = measure.marching_cubes(n_vol, iso_value);
-    # plot isosurface as a triangular surface
-    ax.plot_trisurf(verts[:, 0], verts[:, 1], faces, verts[:, 2], cmap = cmap);
-    # insert colorbar
-    sm = plt.cm.ScalarMappable(cmap = cmap);
-    sm.set_array(n_vol);
-    cbar = fig.colorbar(sm, ax = ax, shrink = .5, aspect = 20);
-    cbar.set_label('Δn');
-    # configure x axis
-    ax.set_zlabel('x (μm)');
-    ax.set_zticks(np.linspace(0, len(x), 5));
-    ax.set_zticklabels([f'{x:.1f}' for x in np.linspace(x[0], x[-1], 5)]);
-    # configure y axis
-    ax.set_xlabel('y (μm)');
-    ax.set_xticks(np.linspace(0, len(y), 5));
-    ax.set_xticklabels([f'{y:.1f}' for y in np.linspace(y[-1], y[0], 5)]);
-    # configure z axis
-    ax.set_ylabel('z (μm)');
-    ax.set_yticks(np.linspace(0, len(z), 3));
-    ax.set_yticklabels([f'{z:.1f}' for z in np.linspace(z[0], z[-1], 3)]);
