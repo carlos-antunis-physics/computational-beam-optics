@@ -47,7 +47,7 @@ Download the files on `main` branch using `git`:
 git clone 'https://github.com/carlos-antunis-physics/computational-beam-optics.git'
 ```
 
-#### Installing the python module in a `Google Colab notebook`
+### Installing the python module in a `Google Colab notebook`
 
 To obtain the python module `optical` provided by this repository on a `Google Colab notebook` add a cell and use the commands:
 
